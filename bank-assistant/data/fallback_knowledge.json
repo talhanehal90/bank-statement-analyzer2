@@ -1,0 +1,77 @@
+{
+  "bank_leadership": {
+    "meezan_bank": {
+      "ceo": "Irfan Siddiqui",
+      "designation": "President & CEO",
+      "chairman": "H.E. Abdulaziz Abdullah Al-Ghurair",
+      "founded": "1997",
+      "headquarters": "Karachi, Pakistan"
+    },
+    "hbl": {
+      "ceo": "Muhammad Aurangzeb",
+      "designation": "President & CEO",
+      "chairman": "Sultan Ali Allana",
+      "founded": "1941",
+      "headquarters": "Karachi, Pakistan"
+    },
+    "mcb_bank": {
+      "ceo": "Shoaib Mumtaz",
+      "designation": "President & CEO",
+      "chairman": "Mian Mohammad Mansha",
+      "founded": "1947",
+      "headquarters": "Lahore, Pakistan"
+    },
+    "ubl": {
+      "ceo": "Shazad Dada",
+      "designation": "President & CEO",
+      "founded": "1959",
+      "headquarters": "Karachi, Pakistan"
+    },
+    "bank_alfalah": {
+      "ceo": "Atif Bajwa",
+      "designation": "President & CEO",
+      "founded": "1997",
+      "headquarters": "Karachi, Pakistan"
+    },
+    "nbp": {
+      "ceo": "Rehmat Ali Hasnie",
+      "designation": "President & CEO",
+      "founded": "1949",
+      "headquarters": "Karachi, Pakistan"
+    },
+    "allied_bank": {
+      "ceo": "Tahir Hassan Qureshi",
+      "designation": "CEO",
+      "founded": "1942",
+      "headquarters": "Lahore, Pakistan"
+    },
+    "habib_metro": {
+      "ceo": "Sirajuddin Aziz",
+      "designation": "President & CEO",
+      "headquarters": "Karachi, Pakistan"
+    },
+    "faysal_bank": {
+      "ceo": "Yousaf Hussain",
+      "designation": "President & CEO",
+      "headquarters": "Karachi, Pakistan"
+    },
+    "bank_of_punjab": {
+      "ceo": "Zafar Masud",
+      "designation": "President & CEO",
+      "headquarters": "Lahore, Pakistan"
+    }
+  },
+  "sbp_info": {
+    "governor": "Jameel Ahmad",
+    "policy_rate_as_of_2024": "22% (check SBP website for latest)",
+    "website": "https://www.sbp.org.pk"
+  },
+  "general_facts": {
+    "total_scheduled_banks_pakistan": 30,
+    "total_microfinance_banks": 11,
+    "banking_regulator": "State Bank of Pakistan (SBP)",
+    "deposit_protection": "Pakistan Deposit Protection Corporation (PDPC)",
+    "max_insured_deposit": "PKR 500,000 per depositor per bank"
+  }
+}
+

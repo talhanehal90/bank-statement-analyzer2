@@ -1,0 +1,1187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pakistan AI Banking Assistant</title>
+
+  <!-- Google Fonts: Syne + JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#0a0c10;
+      --surface:#111318;
+      --surface2:#181c24;
+      --border:#ffffff12;
+      --accent:#00d4aa;
+      --accent2:#0099ff;
+      --text:#f0f2f8;
+      --muted:#6b7280;
+      --gold:#f5c842;
+      --green:#22c55e;
+      --purple:#a78bfa;
+
+      --radius:18px;
+      --shadow: 0 18px 50px rgba(0,0,0,.45);
+      --shadow2: 0 10px 30px rgba(0,0,0,.35);
+      --ease: .2s ease;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Syne, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      overflow:hidden; /* no page scroll */
+    }
+
+    /* subtle luxury glows */
+    .app-bg{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(900px 480px at 12% 10%, rgba(0,212,170,.14), transparent 60%),
+        radial-gradient(900px 520px at 85% 15%, rgba(0,153,255,.12), transparent 58%),
+        radial-gradient(800px 560px at 45% 92%, rgba(167,139,250,.10), transparent 60%),
+        radial-gradient(650px 420px at 60% 40%, rgba(245,200,66,.06), transparent 55%),
+        linear-gradient(180deg, rgba(255,255,255,.02), transparent 40%);
+      filter: saturate(1.1);
+    }
+
+    .layout{
+      height:100%;
+      display:grid;
+      grid-template-columns: 300px 1fr;
+    }
+
+    /* sidebar */
+    .sidebar{
+      height:100%;
+      background: linear-gradient(180deg, rgba(17,19,24,.92), rgba(10,12,16,.92));
+      border-right:1px solid var(--border);
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      padding:14px 14px 12px;
+      gap:14px;
+      overflow:hidden;
+    }
+
+    .sidebar::before{
+      content:"";
+      position:absolute;
+      left:0; top:0; right:0;
+      height:3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2), var(--purple));
+      opacity:.95;
+    }
+
+    .logo{
+      margin-top:6px;
+      padding:12px 12px 10px;
+      border:1px solid var(--border);
+      background: linear-gradient(135deg, rgba(24,28,36,.86), rgba(17,19,24,.86));
+      border-radius: var(--radius);
+      box-shadow: var(--shadow2);
+    }
+
+    .status{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-family: JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: rgba(240,242,248,.85);
+      font-size:12px;
+      letter-spacing:.2px;
+    }
+    .pulse-dot{
+      width:9px;height:9px;border-radius:999px;
+      background: var(--green);
+      box-shadow: 0 0 0 0 rgba(34,197,94,.35);
+      animation: pulse 1.4s infinite;
+    }
+    @keyframes pulse{
+      0%{ box-shadow: 0 0 0 0 rgba(34,197,94,.35); transform:scale(1); }
+      60%{ box-shadow: 0 0 0 10px rgba(34,197,94,0); transform:scale(1.05); }
+      100%{ box-shadow: 0 0 0 0 rgba(34,197,94,0); transform:scale(1); }
+    }
+
+    .appname{
+      margin-top:8px;
+      font-weight:800;
+      font-size:18px;
+      line-height:1.1;
+      letter-spacing:.2px;
+    }
+    .tagline{
+      margin-top:4px;
+      color: var(--muted);
+      font-size:12px;
+      font-family: JetBrains Mono, ui-monospace, monospace;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    .stat{
+      border:1px solid var(--border);
+      background: rgba(24,28,36,.55);
+      border-radius: 16px;
+      padding:10px 10px 9px;
+      position:relative;
+      overflow:hidden;
+      transition: transform var(--ease), border-color var(--ease);
+    }
+    .stat:hover{
+      transform: translateY(-1px);
+      border-color: rgba(255,255,255,.18);
+    }
+    .stat::before{
+      content:"";
+      position:absolute;
+      left:0; top:0; right:0;
+      height:3px;
+      background: linear-gradient(90deg, rgba(0,0,0,0), rgba(0,0,0,0));
+      opacity:1;
+    }
+    .stat[data-accent="teal"]::before{ background: linear-gradient(90deg, var(--accent), rgba(0,212,170,0)); }
+    .stat[data-accent="blue"]::before{ background: linear-gradient(90deg, var(--accent2), rgba(0,153,255,0)); }
+    .stat[data-accent="gold"]::before{ background: linear-gradient(90deg, var(--gold), rgba(245,200,66,0)); }
+    .stat[data-accent="purple"]::before{ background: linear-gradient(90deg, var(--purple), rgba(167,139,250,0)); }
+
+    .stat-num{
+      font-family: JetBrains Mono, ui-monospace, monospace;
+      font-weight:700;
+      font-size:18px;
+      letter-spacing:.2px;
+      margin-top:2px;
+    }
+    .stat-label{
+      margin-top:4px;
+      color: rgba(240,242,248,.72);
+      font-size:11px;
+      line-height:1.2;
+      font-family: JetBrains Mono, ui-monospace, monospace;
+    }
+
+    .section-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      color: rgba(240,242,248,.85);
+      font-size:12px;
+      font-family: JetBrains Mono, ui-monospace, monospace;
+      letter-spacing:.2px;
+      padding:0 2px;
+    }
+
+    .accordion{
+      border:1px solid var(--border);
+      background: rgba(17,19,24,.55);
+      border-radius: var(--radius);
+      overflow:hidden;
+    }
+
+    .acc-item{
+      border-top:1px solid rgba(255,255,255,.06);
+    }
+    .acc-item:first-child{ border-top:none; }
+    .acc-header{
+      width:100%;
+      background: transparent;
+      color: rgba(240,242,248,.92);
+      border:none;
+      padding:10px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      cursor:pointer;
+      transition: background var(--ease);
+      font-family: Syne, system-ui, sans-serif;
+      font-weight:700;
+      font-size:13px;
+    }
+    .acc-header:hover{ background: rgba(255,255,255,.04); }
+    .chev{
+      font-family: JetBrains Mono, ui-monospace, monospace;
+      color: rgba(240,242,248,.65);
+      transition: transform var(--ease);
+    }
+    .acc-item.open .chev{ transform: rotate(90deg); }
+    .acc-body{
+      max-height:0;
+      overflow:hidden;
+      transition: max-height .28s ease;
+      padding:0 12px;
+    }
+    .acc-item.open .acc-body{
+      max-height: 250px;
+      padding-bottom:10px;
+    }
+
+    .chips{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      padding-top:2px;
+    }
+    .chip{
+      font-family: JetBrains Mono, ui-monospace, monospace;
+      font-size:11px;
+      padding:6px 9px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(24,28,36,.55);
+      color: rgba(240,242,248,.88);
+      cursor:pointer;
+      transition: transform var(--ease), border-color var(--ease), box-shadow var(--ease), background var(--ease);
+      user-select:none;
+    }
+    .chip:hover{
+      border-color: rgba(0,212,170,.55);
+      background: rgba(0,212,170,.10);
+      box-shadow: 0 0 0 3px rgba(0,212,170,.08);
+      transform: translateY(-1px);
+    }
+
+    .popular{
+      border:1px solid var(--border);
+      background: rgba(17,19,24,.55);
+      border-radius: var(--radius);
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .qcard{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 10px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(24,28,36,.55);
+      cursor:pointer;
+      transition: transform var(--ease), border-color var(--ease), box-shadow var(--ease);
+    }
+    .qcard:hover{
+      transform: translateY(-1px);
+      border-color: rgba(0,153,255,.35);
+      box-shadow: 0 0 0 3px rgba(0,153,255,.08);
+    }
+    .qtext{
+      font-size:12px;
+      color: rgba(240,242,248,.92);
+      line-height:1.25;
+    }
+    .qarrow{
+      font-family: JetBrains Mono, ui-monospace, monospace;
+      color: rgba(240,242,248,.65);
+      transform: translateX(0);
+      transition: transform var(--ease), color var(--ease);
+    }
+    .qcard:hover .qarrow{
+      transform: translateX(3px);
+      color: rgba(240,242,248,.9);
+    }
+
+    .newconv{
+      margin-top:auto;
+      border:none;
+      width:100%;
+      padding:12px 12px;
+      border-radius:16px;
+      cursor:pointer;
+      color:#07100e;
+      font-weight:900;
+      letter-spacing:.2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      box-shadow: 0 18px 40px rgba(0,0,0,.35);
+      transition: transform var(--ease), filter var(--ease);
+    }
+    .newconv:hover{ transform: translateY(-1px); filter: brightness(1.05); }
+    .newconv:active{ transform: translateY(0); filter: brightness(.98); }
+
+    /* main */
+    .main{
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
+
+    .topbar{
+      height:58px;
+      border-bottom:1px solid var(--border);
+      background: rgba(17,19,24,.65);
+      backdrop-filter: blur(12px);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 16px;
+      gap:12px;
+      flex: 0 0 auto;
+    }
+    .filter{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .select{
+      position:relative;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      background: rgba(24,28,36,.55);
+      border:1px solid rgba(255,255,255,.10);
+      color: rgba(240,242,248,.9);
+      border-radius:14px;
+      padding:8px 10px;
+      cursor:pointer;
+      transition: border-color var(--ease), box-shadow var(--ease);
+      font-family: JetBrains Mono, ui-monospace, monospace;
+      font-size:12px;
+    }
+    .select:hover{
+      border-color: rgba(0,212,170,.35);
+      box-shadow: 0 0 0 3px rgba(0,212,170,.06);
+    }
+    .select select{
+      appearance:none;
+      background: transparent;
+      border:none;
+      outline:none;
+      color: inherit;
+      font: inherit;
+      cursor:pointer;
+      padding-right:22px;
+    }
+    .select::after{
+      content:"▾";
+      position:absolute;
+      right:10px;
+      color: rgba(240,242,248,.75);
+      pointer-events:none;
+    }
+
+    .pills{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .pill{
+      font-family: JetBrains Mono, ui-monospace, monospace;
+      font-size:11px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(24,28,36,.55);
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      transition: transform var(--ease);
+      user-select:none;
+    }
+    .pill:hover{ transform: translateY(-1px); }
+    .pill .dot{
+      width:8px;height:8px;border-radius:999px;
+      box-shadow: 0 0 0 3px rgba(0,0,0,0);
+    }
+    .pill.rag{ color: rgba(34,197,94,.95); border-color: rgba(34,197,94,.18); }
+    .pill.rag .dot{ background: var(--green); box-shadow: 0 0 0 3px rgba(34,197,94,.10); }
+    .pill.live{ color: rgba(0,153,255,.95); border-color: rgba(0,153,255,.18); }
+    .pill.live .dot{ background: var(--accent2); box-shadow: 0 0 0 3px rgba(0,153,255,.10); }
+
+    .chat{
+      flex: 1 1 auto;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      position:relative;
+    }
+
+    .chat-scroll{
+      flex: 1 1 auto;
+      overflow:auto;
+      padding: 18px 18px 8px;
+      scroll-behavior:smooth;
+    }
+
+    /* custom scrollbar (3px) */
+    .chat-scroll::-webkit-scrollbar{ width:3px; }
+    .chat-scroll::-webkit-scrollbar-thumb{
+      background: rgba(255,255,255,.10);
+      border-radius:999px;
+    }
+    .chat-scroll::-webkit-scrollbar-track{ background: transparent; }
+
+    .welcome{
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+    .welcome-inner{
+      width:min(720px, 100%);
+      text-align:center;
+      border:1px solid var(--border);
+      background: linear-gradient(135deg, rgba(24,28,36,.70), rgba(17,19,24,.60));
+      border-radius: 22px;
+      padding: 28px 18px 20px;
+      box-shadow: var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
+    .welcome-inner::before{
+      content:"";
+      position:absolute;
+      inset:-1px;
+      background:
+        radial-gradient(260px 260px at 50% 22%, rgba(0,212,170,.18), transparent 70%),
+        radial-gradient(260px 260px at 50% 28%, rgba(0,153,255,.10), transparent 72%);
+      pointer-events:none;
+    }
+    .bank-icon{
+      position:relative;
+      display:inline-flex;
+      width:84px;height:84px;
+      align-items:center;justify-content:center;
+      margin: 0 auto 10px;
+      border-radius: 22px;
+      background: rgba(0,212,170,.06);
+      border:1px solid rgba(0,212,170,.18);
+      box-shadow: 0 0 0 10px rgba(0,212,170,.04), 0 18px 60px rgba(0,0,0,.45);
+      z-index:1;
+    }
+    .bank-icon span{
+      font-size:34px;
+      filter: drop-shadow(0 10px 24px rgba(0,212,170,.18));
+    }
+    .welcome h2{
+      margin:8px 0 6px;
+      font-size:28px;
+      font-weight:900;
+      z-index:1;
+      position:relative;
+    }
+    .welcome p{
+      margin:0 auto 16px;
+      color: rgba(240,242,248,.80);
+      font-family: JetBrains Mono, ui-monospace, monospace;
+      font-size:12px;
+      z-index:1;
+      position:relative;
+    }
+
+    .suggestions{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:10px;
+      margin-top:14px;
+      z-index:1;
+      position:relative;
+    }
+    .sugg{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(24,28,36,.55);
+      color: rgba(240,242,248,.92);
+      border-radius: 999px;
+      padding:10px 12px;
+      cursor:pointer;
+      transition: transform var(--ease), border-color var(--ease), box-shadow var(--ease);
+      font-size:12px;
+      text-align:center;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .sugg:hover{
+      transform: translateY(-1px);
+      border-color: rgba(0,212,170,.35);
+      box-shadow: 0 0 0 3px rgba(0,212,170,.08);
+    }
+
+    /* messages */
+    .msg-row{
+      display:flex;
+      margin: 10px 0;
+      gap:10px;
+    }
+    .msg-row.user{ justify-content:flex-end; }
+    .msg-row.bot{ justify-content:flex-start; }
+
+    .bubble{
+      max-width: min(660px, 76%);
+      border-radius: 16px;
+      padding: 12px 12px 10px;
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+      position:relative;
+    }
+    .bubble.user{
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #04120e;
+      font-family: Syne, system-ui, sans-serif;
+      font-weight:700;
+      border:none;
+      border-radius: 16px 16px 4px 16px;
+    }
+    .bubble.bot{
+      background: rgba(24,28,36,.78);
+      color: rgba(240,242,248,.95);
+      border-radius: 4px 16px 16px 16px;
+    }
+    .meta{
+      margin-top:8px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      font-family: JetBrains Mono, ui-monospace, monospace;
+      font-size:11px;
+      color: rgba(240,242,248,.55);
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:5px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      font-size:11px;
+      font-family: JetBrains Mono, ui-monospace, monospace;
+      white-space:nowrap;
+    }
+    .badge.kb{
+      border-color: rgba(0,212,170,.25);
+      color: rgba(0,212,170,.95);
+      background: rgba(0,212,170,.08);
+    }
+    .badge.live{
+      border-color: rgba(0,153,255,.25);
+      color: rgba(0,153,255,.95);
+      background: rgba(0,153,255,.08);
+    }
+    .badge.fallback{
+      border-color: rgba(245,200,66,.28);
+      color: rgba(245,200,66,.95);
+      background: rgba(245,200,66,.08);
+    }
+
+    .avatar{
+      width:34px; height:34px;
+      border-radius: 999px;
+      flex: 0 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: rgba(24,28,36,.85);
+      border: 2px solid rgba(255,255,255,.06);
+      position:relative;
+    }
+    .avatar::before{
+      content:"";
+      position:absolute;
+      inset:-3px;
+      border-radius:999px;
+      background: linear-gradient(135deg, rgba(0,212,170,.85), rgba(0,153,255,.65), rgba(167,139,250,.65));
+      z-index:-1;
+      opacity:.85;
+    }
+    .avatar span{
+      font-size:16px;
+      filter: drop-shadow(0 10px 24px rgba(0,212,170,.12));
+    }
+
+    /* typing indicator */
+    .typing{
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+    .tdot{
+      width:7px;height:7px;border-radius:999px;
+      background: rgba(240,242,248,.70);
+      animation: bounce 1s infinite ease-in-out;
+    }
+    .tdot:nth-child(2){ animation-delay:.12s; opacity:.8; }
+    .tdot:nth-child(3){ animation-delay:.24s; opacity:.65; }
+    @keyframes bounce{
+      0%,80%,100%{ transform:translateY(0); }
+      40%{ transform:translateY(-6px); }
+    }
+
+    /* input bar */
+    .inputbar{
+      flex: 0 0 auto;
+      padding: 10px 16px 14px;
+      border-top:1px solid var(--border);
+      background: rgba(17,19,24,.72);
+      backdrop-filter: blur(12px);
+    }
+    .inputwrap{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      border:1px solid rgba(0,212,170,.22);
+      background: rgba(24,28,36,.68);
+      border-radius: 999px;
+      padding: 10px 10px 10px 14px;
+      box-shadow: 0 0 0 0 rgba(0,212,170,.0);
+      transition: box-shadow var(--ease), border-color var(--ease);
+    }
+    .inputwrap:focus-within{
+      border-color: rgba(0,212,170,.45);
+      box-shadow: 0 0 0 4px rgba(0,212,170,.10);
+    }
+    .chatin{
+      flex:1;
+      background: transparent;
+      border:none;
+      outline:none;
+      color: rgba(240,242,248,.95);
+      font-size:13px;
+      font-family: Syne, system-ui, sans-serif;
+      padding: 2px 4px;
+    }
+    .chatin::placeholder{
+      color: rgba(240,242,248,.45);
+      font-family: JetBrains Mono, ui-monospace, monospace;
+      font-size:12px;
+    }
+    .send{
+      border:none;
+      cursor:pointer;
+      width:42px;height:42px;
+      border-radius:999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color:#06120f;
+      font-weight:900;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow: 0 12px 30px rgba(0,0,0,.35);
+      transition: transform var(--ease), filter var(--ease);
+    }
+    .send:hover{ transform: translateY(-1px); filter: brightness(1.05); }
+    .send:active{ transform: translateY(0px); filter: brightness(.98); }
+    .send span{
+      font-family: JetBrains Mono, ui-monospace, monospace;
+      font-size:16px;
+      transform: translateX(1px);
+    }
+    .hint{
+      margin-top:8px;
+      font-family: JetBrains Mono, ui-monospace, monospace;
+      font-size:11px;
+      color: rgba(240,242,248,.55);
+      text-align:center;
+    }
+
+    /* responsive */
+    @media (max-width: 960px){
+      .layout{ grid-template-columns: 1fr; }
+      .sidebar{ display:none; }
+      .bubble{ max-width: 86%; }
+      .suggestions{ grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-bg"></div>
+
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="status">
+          <div class="pulse-dot"></div>
+          <div>BankBot Online</div>
+        </div>
+        <div class="appname">BankBot Pakistan</div>
+        <div class="tagline">49 Banks · Always Available</div>
+      </div>
+
+      <div class="stats">
+        <div class="stat" data-accent="teal">
+          <div class="stat-num" data-count="49">0</div>
+          <div class="stat-label">Total Banks</div>
+        </div>
+        <div class="stat" data-accent="blue">
+          <div class="stat-num" data-count="6">0</div>
+          <div class="stat-label">Islamic Banks</div>
+        </div>
+        <div class="stat" data-accent="gold">
+          <div class="stat-num" data-count="11">0</div>
+          <div class="stat-label">Microfinance</div>
+        </div>
+        <div class="stat" data-accent="purple">
+          <div class="stat-num" data-count="4">0</div>
+          <div class="stat-label">Digital Banks</div>
+        </div>
+      </div>
+
+      <div class="section-title">
+        <div>Bank Categories</div>
+        <div style="color:rgba(240,242,248,.55);font-size:11px;">click to expand</div>
+      </div>
+
+      <div class="accordion" id="bankAccordion"></div>
+
+      <div class="section-title">
+        <div>Popular Questions</div>
+        <div style="color:rgba(240,242,248,.55);font-size:11px;">tap to ask</div>
+      </div>
+
+      <div class="popular" id="popularQuestions"></div>
+
+      <button class="newconv" id="newConversationBtn">New Conversation</button>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <div class="topbar">
+        <div class="filter">
+          <div class="select" title="Filter by bank (UI only)">
+            <select id="bankFilter">
+              <option>All Banks</option>
+              <option>Meezan Bank</option>
+              <option>HBL</option>
+              <option>MCB</option>
+              <option>UBL</option>
+              <option>Bank Alfalah</option>
+              <option>NBP</option>
+              <option>Faysal Bank</option>
+              <option>Bank of Punjab</option>
+              <option>BankIslami</option>
+              <option>Al Baraka</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pills">
+          <div class="pill rag"><span class="dot"></span>RAG Active</div>
+          <div class="pill live"><span class="dot"></span>Live Search On</div>
+        </div>
+      </div>
+
+      <section class="chat">
+        <div class="chat-scroll" id="chatScroll">
+          <div class="welcome" id="welcome">
+            <div class="welcome-inner">
+              <div class="bank-icon"><span>🏦</span></div>
+              <h2>Your Pakistani Banking Expert</h2>
+              <p>Ask me anything about any bank in Pakistan</p>
+
+              <div class="suggestions" id="welcomeSuggestions">
+                <div class="sugg">Who is Meezan CEO?</div>
+                <div class="sugg">HBL loan rates?</div>
+                <div class="sugg">Open a savings account</div>
+                <div class="sugg">Islamic banking?</div>
+                <div class="sugg">Compare two banks</div>
+                <div class="sugg">SBP policy rate?</div>
+              </div>
+            </div>
+          </div>
+
+          <div id="messages"></div>
+        </div>
+
+        <div class="inputbar">
+          <div class="inputwrap" id="inputWrap">
+            <input id="chatInput" class="chatin" placeholder="Ask about any Pakistani bank..." autocomplete="off" />
+            <button class="send" id="sendBtn" title="Send"><span>→</span></button>
+          </div>
+          <div class="hint">Supports English & Roman Urdu · 49 banks covered</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const BANK_CATEGORIES = [
+      { title: "Commercial", banks: ["HBL", "MCB Bank", "UBL", "Bank Alfalah", "Allied Bank", "Habib Metro", "Faysal Bank", "Bank AL Habib"] },
+      { title: "Islamic", banks: ["Meezan Bank", "BankIslami", "Al Baraka", "Dubai Islamic Bank", "MCB Islamic", "UBL Ameen"] },
+      { title: "Government", banks: ["NBP", "Bank of Punjab", "Bank of Khyber", "ZTBL"] },
+      { title: "Foreign", banks: ["Standard Chartered", "Citibank", "Deutsche Bank"] },
+      { title: "Digital", banks: ["NayaPay", "SadaPay", "JazzCash", "Easypaisa"] }
+    ];
+
+    const POPULAR_QUESTIONS = [
+      "Who is Meezan Bank CEO?",
+      "HBL home loan rates?",
+      "Compare MCB vs UBL savings",
+      "Best Islamic bank Pakistan?",
+      "NayaPay vs Sadapay features?"
+    ];
+
+    const CEO_DATA = {
+      "hbl": "Muhammad Aurangzeb",
+      "mcb": "Shoaib Mumtaz",
+      "mcb bank": "Shoaib Mumtaz",
+      "ubl": "Shazad Dada",
+      "alfalah": "Atif Bajwa",
+      "bank alfalah": "Atif Bajwa",
+      "nbp": "Rehmat Ali Hasnie",
+      "national bank": "Rehmat Ali Hasnie",
+      "meezan": "Irfan Siddiqui",
+      "meezan bank": "Irfan Siddiqui",
+      "faysal": "Yousaf Hussain",
+      "bop": "Zafar Masud",
+      "bank of punjab": "Zafar Masud"
+    };
+
+    const $ = (sel) => document.querySelector(sel);
+    const messagesEl = $("#messages");
+    const welcomeEl = $("#welcome");
+    const chatScroll = $("#chatScroll");
+    const chatInput = $("#chatInput");
+    const sendBtn = $("#sendBtn");
+
+    function scrollToBottom(){ chatScroll.scrollTop = chatScroll.scrollHeight; }
+    function nowLabel(){ return "just now"; }
+
+    function addUserMessage(text){
+      const row = document.createElement("div");
+      row.className = "msg-row user";
+      const bubble = document.createElement("div");
+      bubble.className = "bubble user";
+      bubble.textContent = text;
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.innerHTML = `<span style="opacity:.0">.</span><span>${nowLabel()}</span>`;
+      bubble.appendChild(meta);
+      row.appendChild(bubble);
+      messagesEl.appendChild(row);
+      scrollToBottom();
+    }
+
+    function addBotMessage(text, badgeType){
+      const row = document.createElement("div");
+      row.className = "msg-row bot";
+
+      const avatar = document.createElement("div");
+      avatar.className = "avatar";
+      avatar.innerHTML = `<span>🏦</span>`;
+
+      const bubble = document.createElement("div");
+      bubble.className = "bubble bot";
+
+      const content = document.createElement("div");
+      content.style.whiteSpace = "pre-wrap";
+      content.textContent = text;
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+
+      const badge = document.createElement("span");
+      badge.className = `badge ${badgeType}`;
+      if(badgeType === "kb") badge.textContent = "📚 Knowledge Base";
+      if(badgeType === "live") badge.textContent = "🔍 Live Search";
+      if(badgeType === "fallback") badge.textContent = "🟨 Fallback Data";
+
+      meta.appendChild(badge);
+      const time = document.createElement("span");
+      time.textContent = nowLabel();
+      meta.appendChild(time);
+
+      bubble.appendChild(content);
+      bubble.appendChild(meta);
+
+      row.appendChild(avatar);
+      row.appendChild(bubble);
+
+      messagesEl.appendChild(row);
+      scrollToBottom();
+    }
+
+    function addTypingIndicator(){
+      const row = document.createElement("div");
+      row.className = "msg-row bot";
+      row.id = "typingRow";
+
+      const avatar = document.createElement("div");
+      avatar.className = "avatar";
+      avatar.innerHTML = `<span>🏦</span>`;
+
+      const bubble = document.createElement("div");
+      bubble.className = "bubble bot";
+
+      const typing = document.createElement("div");
+      typing.className = "typing";
+      typing.innerHTML = `<div class="tdot"></div><div class="tdot"></div><div class="tdot"></div>
+                          <div style="margin-left:6px;color:rgba(240,242,248,.68);font-family:JetBrains Mono, monospace;font-size:11px;">typing</div>`;
+      bubble.appendChild(typing);
+
+      row.appendChild(avatar);
+      row.appendChild(bubble);
+      messagesEl.appendChild(row);
+      scrollToBottom();
+    }
+
+    function removeTypingIndicator(){
+      const row = $("#typingRow");
+      if(row) row.remove();
+    }
+
+    function detectBankFromMessage(msg){
+      const m = msg.toLowerCase();
+      const candidates = [
+        "meezan bank","meezan",
+        "habib bank","hbl",
+        "mcb bank","mcb",
+        "ubl","united bank",
+        "bank alfalah","alfalah",
+        "nbp","national bank",
+        "faysal","bank of punjab","bop"
+      ];
+      candidates.sort((a,b)=>b.length-a.length);
+      for(const c of candidates){
+        if(m.includes(c)) return c;
+      }
+      return null;
+    }
+
+    function responseFor(msg){
+      const m = msg.toLowerCase();
+
+      if(m.includes("meezan")){
+        return {
+          badge: "kb",
+          text:
+`Meezan Bank is Pakistan's largest Islamic bank.
+CEO: Irfan Siddiqui · Founded: 1997
+Products: Car Ijarah, Home Finance, Roshan Digital
+Profit rates updated every month on their website.
+Helpline: 111-331-331`
+        };
+      }
+
+      if(m.includes("hbl") || m.includes("habib")){
+        return {
+          badge: "kb",
+          text:
+`HBL is Pakistan's biggest commercial bank.
+CEO: Muhammad Aurangzeb · Founded: 1941
+Home Loan rate: KIBOR + 2% to 3%
+Car Loan: Starting from 18% per annum
+800+ branches nationwide.
+Helpline: 111-111-425`
+        };
+      }
+
+      if(m.includes("islamic") || m.includes("shariah")){
+        return {
+          badge: "kb",
+          text:
+`Top Islamic banks in Pakistan:
+1. Meezan Bank — largest, most branches
+2. BankIslami — good digital features
+3. Al Baraka — international backing
+4. Dubai Islamic Bank — UAE-backed
+All follow SBP Shariah guidelines.`
+        };
+      }
+
+      if(m.includes("nayapay") || m.includes("sadapay")){
+        return {
+          badge: "live",
+          text:
+`NayaPay: Higher profit rates (~14%), VISA card,
+no minimum balance, free transfers.
+SadaPay: Clean UI, Mastercard, instant signup,
+great for freelancers.
+Both are SBP-licensed EMIs.`
+        };
+      }
+
+      if(m.includes("compare")){
+        const banks = ["hbl","meezan","mcb","ubl","alfalah","nbp"];
+        const found = banks.filter(b => m.includes(b));
+        const a = found[0] || "mcb";
+        const b = found[1] || "ubl";
+
+        const pretty = (x)=>({
+          hbl:"HBL",
+          meezan:"Meezan Bank",
+          mcb:"MCB",
+          ubl:"UBL",
+          alfalah:"Bank Alfalah",
+          nbp:"NBP"
+        }[x] || x.toUpperCase());
+
+        return {
+          badge: "live",
+          text:
+`${pretty(a)} vs ${pretty(b)} — quick comparison
+
+| Category        | ${pretty(a)}                           | ${pretty(b)}                           |
+|----------------|-----------------------------------------|-----------------------------------------|
+| Strength       | Large network & corporate scale          | Strong retail + digital offerings       |
+| Savings        | Competitive bundles & promos             | Broad account variants                  |
+| Digital        | App + cards ecosystem                    | Digital-first journeys in many products |
+| Best for       | Nationwide coverage & convenience        | Everyday banking + consumer products    |
+
+Tip: Tell me your city + goal (savings, loan, Islamic) and I’ll tailor it.`
+        };
+      }
+
+      if(m.includes("ceo")){
+        const bankKey = detectBankFromMessage(msg);
+        let chosenName = null;
+        if(bankKey){
+          chosenName = CEO_DATA[bankKey] || CEO_DATA[(bankKey || "").replace(" bank","")] || null;
+        }
+        if(!chosenName){
+          for(const k of Object.keys(CEO_DATA)){
+            if(m.includes(k)) { chosenName = CEO_DATA[k]; break; }
+          }
+        }
+        const bankLabel = bankKey ? bankKey.replace(/\b\w/g, c=>c.toUpperCase()) : "the bank";
+        const name = chosenName || "not available in demo data";
+        return { badge: "fallback", text: `The CEO of ${bankLabel} is ${name}.` };
+      }
+
+      return {
+        badge: "kb",
+        text:
+`I found information about that from our
+Pakistan banking knowledge base.
+Please visit the official bank website or
+call their helpline for the most current
+rates and product details.`
+      };
+    }
+
+    async function sendMessage(text){
+      const trimmed = (text || "").trim();
+      if(!trimmed) return;
+      if(welcomeEl) welcomeEl.style.display = "none";
+      addUserMessage(trimmed);
+      addTypingIndicator();
+      await new Promise(r => setTimeout(r, 1500));
+      removeTypingIndicator();
+      const r = responseFor(trimmed);
+      addBotMessage(r.text, r.badge);
+    }
+
+    function buildAccordion(){
+      const wrap = $("#bankAccordion");
+      wrap.innerHTML = "";
+      BANK_CATEGORIES.forEach((cat, idx)=>{
+        const item = document.createElement("div");
+        item.className = "acc-item" + (idx === 0 ? " open" : "");
+        const header = document.createElement("button");
+        header.className = "acc-header";
+        header.type = "button";
+        header.innerHTML = `<span>${cat.title}</span><span class="chev">›</span>`;
+        const body = document.createElement("div");
+        body.className = "acc-body";
+        const chips = document.createElement("div");
+        chips.className = "chips";
+        cat.banks.forEach((b)=>{
+          const c = document.createElement("div");
+          c.className = "chip";
+          c.textContent = b;
+          c.addEventListener("click", ()=> {
+            chatInput.value = `Tell me about ${b}`;
+            chatInput.focus();
+          });
+          chips.appendChild(c);
+        });
+        body.appendChild(chips);
+
+        header.addEventListener("click", ()=>{
+          item.classList.toggle("open");
+          [...wrap.querySelectorAll(".acc-item")].forEach((el)=>{
+            if(el !== item) el.classList.remove("open");
+          });
+        });
+
+        item.appendChild(header);
+        item.appendChild(body);
+        wrap.appendChild(item);
+      });
+    }
+
+    function buildPopular(){
+      const wrap = $("#popularQuestions");
+      wrap.innerHTML = "";
+      POPULAR_QUESTIONS.forEach((q)=>{
+        const card = document.createElement("div");
+        card.className = "qcard";
+        card.innerHTML = `<div class="qtext">${q}</div><div class="qarrow">→</div>`;
+        card.addEventListener("click", ()=>{
+          chatInput.value = q;
+          chatInput.focus();
+        });
+        wrap.appendChild(card);
+      });
+    }
+
+    function animateCounts(){
+      const els = document.querySelectorAll("[data-count]");
+      els.forEach(el=>{
+        const target = parseInt(el.getAttribute("data-count"), 10) || 0;
+        const duration = 1000;
+        const t0 = performance.now();
+        function tick(t){
+          const p = Math.min(1, (t - t0) / duration);
+          const eased = 1 - Math.pow(1 - p, 3);
+          el.textContent = String(Math.round(target * eased));
+          if(p < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      });
+    }
+
+    sendBtn.addEventListener("click", ()=>{
+      const v = chatInput.value;
+      chatInput.value = "";
+      sendMessage(v);
+    });
+
+    chatInput.addEventListener("keydown", (e)=>{
+      if(e.key === "Enter" && !e.shiftKey){
+        e.preventDefault();
+        const v = chatInput.value;
+        chatInput.value = "";
+        sendMessage(v);
+      }
+    });
+
+    $("#welcomeSuggestions").addEventListener("click", (e)=>{
+      const chip = e.target.closest(".sugg");
+      if(!chip) return;
+      sendMessage(chip.textContent.trim());
+    });
+
+    $("#newConversationBtn").addEventListener("click", ()=>{
+      messagesEl.innerHTML = "";
+      welcomeEl.style.display = "flex";
+      chatInput.value = "";
+      chatInput.focus();
+      scrollToBottom();
+    });
+
+    buildAccordion();
+    buildPopular();
+    animateCounts();
+    scrollToBottom();
+    chatInput.focus();
+  </script>
+</body>
+</html>
+

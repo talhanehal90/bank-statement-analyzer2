@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+langchain
+chromadb
+sentence-transformers
+ollama
+pydantic
+python-dotenv
+requests
+beautifulsoup4
+duckduckgo-search>=6.0.0
+streamlit
+httpx
