@@ -31,6 +31,12 @@ Thumbs.db
 # --- Streamlit ---
 .streamlit/
 
+# --- pip caches (can be huge) ---
+.pip-cache/
+.pip-tmp/
+**/.pip-cache/
+**/.pip-tmp/
+
 # --- Local vector DB / scraped artifacts ---
 chroma_db/
 **/chroma_db/
